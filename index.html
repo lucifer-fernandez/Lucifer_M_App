@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch & Earn | Telegram Mini App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script src='//libtl.com/sdk.js' data-zone='10142093' data-sdk='show_10142093'></script>
+    
+    <style>
+        /* CSS কোড (আপনার পূর্বের সমস্ত CSS এখানে অন্তর্ভুক্ত করা হয়েছে) */
+        :root {
+            --primary-color: #4CAF50; /* Changed back to green for professional look */
+            --secondary-color: #FF5722;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --warning-color: #FFD700;
+            --error-color: #ff5555;
+            --success-color: #4CAF50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        
+        .user-info {
+            color: var(--secondary-color);
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            margin-top: 0;
+        }
+        
+        .balance-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .balance-item {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .balance-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .progress-container {
+            margin: 25px 0;
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background-color: #333;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #8BC34A);
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: #333;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .notice {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        
+        .notice-warning {
+            background-color: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+        
+        .notice-error {
+            background-color: rgba(255, 85, 85, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .notice-success {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .developer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #777;
+        }
+        
+        .highlight {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        /* Payment Method Dialog */
+        .payment-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .payment-content {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .payment-option {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .payment-option:hover {
+            background-color: #333;
+        }
+        
+        .payment-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.2);
+        }
+        
+        .payment-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        .security-note {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: normal;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="security-note">
+            **Your Balance is Secured!** The balance shown is synchronized with your Telegram Bot's server.
+        </div>
+        <h1>Watch for Earn 💰</h1>
+        <div class="user-info" id="user-info">
+            Welcome, Telegram User!
+        </div>
+        
+        <div class="card">
+            <h2>Your Earnings (Live)</h2>
+            
+            <div class="balance-info">
+                <div class="balance-item">
+                    <div>Watched Ads</div>
+                    <div class="balance-value" id="watched-ads">0</div>
+                </div>
+                <div class="balance-item">
+                    <div>USD Balance</div>
+                    <div class="balance-value">$<span id="usd-balance">0.0000</span></div>
+                </div>
+                <div class="balance-item">
+                    <div>BDT Balance</div>
+                    <div class="balance-value">৳<span id="bdt-balance">0.00</span></div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div>Withdrawal Progress (Minimum $2.00)</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-bar">0%</div>
+                </div>
+            </div>
+            
+            <div class="notice notice-warning" id="ad-rules-notice">
+                **Ad Rules:** Wait for the ad to fully load and complete. Your Bot server confirms the reward.
+            </div>
+            
+            <div class="loading" id="ad-loading">
+                <div class="loading-spinner"></div>
+                <div>Loading ad, **Please wait 30 seconds** after the ad opens...</div>
+            </div>
+            
+            <div class="button-group">
+                <button id="watch-ad-btn" class="btn btn-primary">Watch Ad (+$0.0035)</button>
+                <button id="withdraw-btn" class="btn btn-secondary">Withdraw Earnings</button>
+                <button id="transaction-btn" class="btn btn-secondary" disabled>History (Bot Feature)</button>
+            </div>
+            
+            <div class="notice notice-error" id="withdraw-notice">
+                **Notice:** Your current balance is being tracked by your Telegram Bot.
+            </div>
+        </div>
+        
+        <div class="developer">
+            Developed by <span class="highlight">Rayhan</span> | Hosted on GitHub Pages
+        </div>
+    </div>
+
+    <div class="payment-dialog" id="payment-dialog">
+        <div class="payment-content">
+            <h2>Withdrawal Details</h2>
+            
+            <input type="text" id="full-name" class="payment-input" placeholder="Enter your Full Name (For Payment)">
+            
+            <div class="payment-option" data-method="bkash">
+                **Bkash (Personal)**
+                <p>1.5% processing fee</p>
+            </div>
+            
+            <div class="payment-option" data-method="nagad">
+                **Nagad (Personal)**
+                <p>1.5% processing fee</p>
+            </div>
+            
+            <div class="payment-option" data-method="trc20">
+                **USDT (TRC20)**
+                <p>No processing fee</p>
+            </div>
+            
+            <input type="text" id="payment-details" class="payment-input" placeholder="Enter account number/TRC20 address">
+            
+            <div class="button-group">
+                <button id="confirm-payment" class="btn btn-primary">Confirm Withdrawal</button>
+                <button id="cancel-payment" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const USER_DATA_KEY = 'tg_unsecure_data'; 
+        const config = {
+            earningsPerAd: 0.0035,
+            withdrawalThreshold: 2.00, // USD
+            bdtRate: 110, // Example Rate
+        };
+        
+        // DUMMY/INSECURE DATA - MUST BE REPLACED BY SECURE FETCH FROM BOT
+        let userData = {
+            watchedAds: 0,
+            balanceUSD: 0.0000,
+            balanceBDT: 0.00,
+            selectedPaymentMethod: null,
+            userId: null, 
+            username: 'N/A',
+            firstName: 'Telegram User'
+        };
+
+        // --- LOCAL STORAGE HANDLING (ONLY FOR DEMO/VISUALS) ---
+        function loadUserData() {
+            const storedData = localStorage.getItem(USER_DATA_KEY);
+            if (storedData) {
+                try {
+                    const loaded = JSON.parse(storedData);
+                    userData.watchedAds = loaded.watchedAds || 0;
+                    userData.balanceUSD = loaded.balanceUSD || 0.0000;
+                    userData.balanceBDT = loaded.balanceBDT || 0.00;
+                } catch (e) {
+                    console.error("Error loading stored data:", e);
+                }
+            }
+        }
+
+        function saveUserData() {
+            const dataToSave = {
+                watchedAds: userData.watchedAds,
+                balanceUSD: userData.balanceUSD,
+                balanceBDT: userData.balanceBDT
+            };
+            localStorage.setItem(USER_DATA_KEY, JSON.stringify(dataToSave));
+        }
+
+        // --- CORE INITIALIZATION & UI LOADING ---
+        $(document).ready(function() {
+            initializeWebAppData();
+            loadUserData();
+            setupPaymentMethods();
+            updateUI(); 
+            // Change Primary color back to green for professional look
+            if(window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.setHeaderColor('#121212'); 
+            }
+        });
+
+        function initializeWebAppData() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const WebApp = window.Telegram.WebApp;
+                WebApp.ready();
+
+                if (WebApp.initDataUnsafe && WebApp.initDataUnsafe.user) {
+                    const user = WebApp.initDataUnsafe.user;
+                    userData.userId = user.id;
+                    userData.username = user.username || 'N/A';
+                    userData.firstName = user.first_name;
+                    const display_name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                    
+                    $('#user-info').html(`Welcome, **${display_name}**! (@${userData.username})`);
+                }
+            }
+        }
+        
+        // --- UI Update functions ---
+        function updateUI() {
+            userData.balanceBDT = userData.balanceUSD * config.bdtRate;
+            
+            $('#watched-ads').text(userData.watchedAds.toString());
+            $('#usd-balance').text(userData.balanceUSD.toFixed(4));
+            $('#bdt-balance').text(userData.balanceBDT.toFixed(2));
+            
+            saveUserData();
+            
+            const progressPercent = (userData.balanceUSD / config.withdrawalThreshold) * 100;
+            $('#progress-bar').css('width', progressPercent + '%').text(Math.min(100, Math.round(progressPercent)) + '%');
+            
+            $('#withdraw-btn').prop('disabled', userData.balanceUSD < config.withdrawalThreshold);
+
+            if (userData.balanceUSD >= config.withdrawalThreshold) {
+                 $('#withdraw-notice').removeClass('notice-error').addClass('notice-success')
+                    .html('**Ready to withdraw!** Tap "Withdraw Earnings"');
+            } else {
+                 const needed = (config.withdrawalThreshold - userData.balanceUSD).toFixed(4);
+                 $('#withdraw-notice').removeClass('notice-success').addClass('notice-error')
+                    .html(`**Notice:** You need **$${needed}** more to withdraw.`);
+            }
+        }
+        
+        function showLoading(show) {
+            $('#ad-loading').toggle(show);
+            $('#watch-ad-btn').prop('disabled', show);
+            $('#withdraw-btn').prop('disabled', show || userData.balanceUSD < config.withdrawalThreshold);
+        }
+        
+        // --- AD VIEWING LOGIC (INSECURE BALANCE UPDATE) ---
+        $('#watch-ad-btn').click(function() {
+            if (!userData.userId) {
+                alert('Error: Please open the Web App from your Telegram Bot.');
+                return;
+            }
+            
+            showLoading(true);
+            
+            // MONETAG NEW FUNCTION CALL
+            show_10142093().then(() => {
+                // Update balance directly in the browser (INSECURE)
+                userData.balanceUSD += config.earningsPerAd;
+                userData.watchedAds += 1;
+                updateUI();
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showAlert(`✅ Earned $${config.earningsPerAd.toFixed(4)}! Your new balance is $${userData.balanceUSD.toFixed(4)}`);
+                    // Send signal to bot for notification
+                    window.Telegram.WebApp.sendData(`NOTIFY_AD_WATCHED_ID:${userData.userId}`);
+                    window.Telegram.WebApp.close(); 
+                }
+            }).catch(e => {
+                $('<div class="notice notice-error">Ad failed to load or was closed too early. Please try again.</div>')
+                    .insertAfter('#ad-loading')
+                    .delay(4000)
+                    .fadeOut(500, function() { $(this).remove(); });
+            }).finally(() => {
+                showLoading(false);
+            });
+        });
+        
+        // --- WITHDRAWAL SUBMISSION LOGIC (Sends Data to Bot) ---
+        $('#withdraw-btn').click(function() {
+            if (userData.balanceUSD >= config.withdrawalThreshold) {
+                $('#payment-details').val('');
+                $('#full-name').val(userData.firstName);
+                $('.payment-option').removeClass('selected');
+                userData.selectedPaymentMethod = null;
+                $('#payment-dialog').show().css('display', 'flex'); 
+            }
+        });
+        
+        $('#confirm-payment').click(function() {
+            if (!userData.selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+            
+            const account = $('#payment-details').val().trim();
+            const fullName = $('#full-name').val().trim();
+            
+            if (!account || !fullName) {
+                alert('Please enter your full name and account details.');
+                return;
+            }
+            
+            if (window.Telegram && window.Telegram.WebApp) {
+                 const final_amount_usd = userData.balanceUSD;
+                 const methodInfo = {
+                    'bkash': { name: 'Bkash (Personal)'},
+                    'nagad': { name: 'Nagad (Personal)'},
+                    'trc20': { name: 'USDT (TRC20)'}
+                 }[userData.selectedPaymentMethod];
+
+                 // **ACTION:** WITHDRAWAL_REQUEST Signal for Bot to notify admin
+                 const payload = {
+                    action: 'WITHDRAWAL_REQUEST',
+                    user_id: userData.userId,
+                    username: userData.username,
+                    full_name: fullName,
+                    amount_usd: final_amount_usd.toFixed(4),
+                    amount_bdt: (final_amount_usd * config.bdtRate).toFixed(2),
+                    method: methodInfo.name,
+                    account_details: account,
+                    init_data: window.Telegram.WebApp.initData
+                 };
+                 
+                 // Send the withdrawal request data to the Bot
+                 window.Telegram.WebApp.sendData(JSON.stringify(payload));
+                 
+                 // Reset balance after submission (INSECURE BUT NECESSARY FOR THIS MODEL)
+                 userData.balanceUSD = 0.0000;
+                 userData.watchedAds = 0;
+                 updateUI(); 
+
+                 window.Telegram.WebApp.showAlert(`Request Sent! Your balance has been reset to 0. You will be notified when payment is sent.`);
+                 $('#payment-dialog').hide();
+                 window.Telegram.WebApp.close(); 
+            }
+        });
+        
+        $('#cancel-payment').click(function() {
+            $('#payment-dialog').hide();
+        });
+        
+        // Initialize payment methods
+        function setupPaymentMethods() {
+            $('.payment-option').click(function() {
+                $('.payment-option').removeClass('selected');
+                $(this).addClass('selected');
+                userData.selectedPaymentMethod = $(this).data('method');
+                
+                const placeholder = userData.selectedPaymentMethod === 'trc20' ? 
+                    'Enter your TRC20 wallet address (TRX network)' : 
+                    'Enter your Bkash/Nagad account number';
+                $('#payment-details').attr('placeholder', placeholder);
+            });
+        }
+    </script>
+</body>
+</html>
